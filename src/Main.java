@@ -1,45 +1,22 @@
 import java.io.*;
-import java.util.ArrayList;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 import java.util.Stack;
 
 public class Main {
+    static File fitxer = new File("data.txt");
 
     public static void main(String[] args) {
         mainMenu();
 
     }
 
-    public static ArrayList<Carta> generarBaralla() {
-        String[] pals = {"OROS", "COPES", "ESPASES", "BASTOS"};
-        ArrayList<Carta> barallaGenerada = new ArrayList<>();
-
-        // RECORRER ELS PALS
-        for (int i = 0; i < pals.length; i++) {
-            // RECORRER ELS NUMEROS
-            for (int j = 0; j < 12; j++) {
-                Carta cartaCreada = new Carta((j + 1), pals[i]);
-                barallaGenerada.add(cartaCreada);
-            }
-        }
-        return barallaGenerada;
-    }
-
-    public static ArrayList<Carta> barrejarBaralla(ArrayList<Carta>barallaAMesclar) {
-        ArrayList<Carta> barallaBarrejada = new ArrayList<>();
-
-        while (barallaAMesclar.size() != 0) {
-            int numeroRandom = (int) (Math.random() * (barallaAMesclar.size()) + 0);
-            barallaBarrejada.add(barallaAMesclar.remove(numeroRandom));
-        }
-        return barallaBarrejada;
-    }
 
     public static void mainMenu() {
         Scanner sc = new Scanner(System.in);
         while (true) {
             int opcioMainMenu = 0;
+            System.out.println("--------------");
             System.out.println("CARTA MÉS ALTA");
             System.out.println("--------------");
             System.out.println("1. Jugar");
@@ -49,36 +26,130 @@ public class Main {
             System.out.print("Opcio: ");
             try {
                 opcioMainMenu = sc.nextInt();
+                sc.nextLine();
                 if (opcioMainMenu < 1 || opcioMainMenu > 3) throw new InputMismatchException();
             } catch (InputMismatchException e) {
                 System.out.println("Opcio incorrecta");
             }
-            if (opcioMainMenu == 1){
+            if (opcioMainMenu == 1) {
                 jugar();
+            }
+            if (opcioMainMenu == 2){
+                if (!fitxer.exists()){
+                    System.out.println("No hi ha cap partida guardada\n");
+                }else {
+                    jugar();
+                }
+            }
+            if (opcioMainMenu == 3) {
+                System.out.println("Adeu, fins la proxima !!!");
+                break;
             }
         }
     }
 
     private static void jugar() {
+
         Scanner sc = new Scanner(System.in);
 
-        System.out.print("Nom jugador 1: ");
-        String nomJugador1 = sc.nextLine();
-        System.out.print("Nom jugador 2: ");
-        String nomJugador2 = sc.nextLine();
+        Jugador j1;
+        Jugador j2;
+        Baralla baralla;
 
-        ArrayList<Carta> baralla = generarBaralla();
-        baralla = barrejarBaralla(baralla);
+        if (fitxer.exists()){
+            System.out.println("LLEGIR FITXER");
+            ObjectInputStream fluxeLectura;
+            try {
+                fluxeLectura = new ObjectInputStream(new FileInputStream(fitxer));
+                j1 = (Jugador) fluxeLectura.readObject();
+                j2 = (Jugador) fluxeLectura.readObject();
+                baralla = (Baralla) fluxeLectura.readObject();
+                System.out.println(j1.puntuacio);
+                System.out.println(j2.puntuacio);
+                fluxeLectura.close();
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            fitxer.delete();
+        } else {
+            j1 = new Jugador();
+            j2 = new Jugador();
+            baralla = new Baralla();
+            baralla.generarCartes();
 
-        Stack<Carta> pilaCartes = new Stack<Carta>();
-        for (int i = 0; i < baralla.size(); i++) {
-            //TODO PLENAR PILA
+            System.out.print("Nom jugador 1:");
+            j1.setNom(sc.nextLine());
+            System.out.print("Nom jugador 2:");
+            j2.setNom(sc.nextLine());
+
         }
 
+        // CREAR I PLENAR PILA
+        Stack<Carta> pilaCartes = new Stack<>();
+        for (Carta carta : baralla.getCartes()) {
+            pilaCartes.push(carta);
+        }
 
-        System.out.print("Apreta ENTER per a començar...");
-        sc.nextLine();
+        while (true) {
+            System.out.println("ENTER -> Treure cartes    GUARDAR -> Guardar partida");
+            System.out.print("-> ");
+            String jugar = sc.nextLine();
+            if (jugar.equals("GUARDAR")) {
+                // GUARDAR PARTIDA
+                try {
+                    ObjectOutputStream fluxeEscriptura = null;
+                    fluxeEscriptura = new ObjectOutputStream(new FileOutputStream(fitxer));
+                    fluxeEscriptura.writeObject(j1);
+                    fluxeEscriptura.writeObject(j2);
+                    fluxeEscriptura.writeObject(baralla);
+                    fluxeEscriptura.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+            }
 
+            // ASSIGNAR CARTES
+            Carta cartaJ1 = pilaCartes.pop();
+            Carta cartaJ2 = pilaCartes.pop();
 
+            // SUMAR PUNTS
+            if (cartaJ1.numero < cartaJ2.numero) j2.ferPunt();
+            if (cartaJ1.numero > cartaJ2.numero) j1.ferPunt();
+
+            // MOSTRAR RESULTAT I CARTES
+            System.out.println("Cartes restants: " + pilaCartes.size());
+            System.out.println(j1.getNom() + " -> " + j1.getPuntuacio() + " : " + j2.getPuntuacio() + " <- " + j2.getNom());
+            System.out.println("------------------------------------");
+            System.out.println(cartaJ1.getPal() + " " + cartaJ1.getNumero() + " --------- " + cartaJ2.getNumero() + " " + cartaJ2.getPal());
+
+            // COMPROVACIO GUANYADOR
+            if (pilaCartes.empty()) {
+                if (j1.puntuacio < j2.puntuacio) System.out.println("\n"+j2.getNom() + " HA GUANYAT!!!"+"\n");
+                if (j1.puntuacio > j2.puntuacio) System.out.println("\n"+j1.getNom() + " HA GUANYAT!!!"+"\n");
+                if (j1.puntuacio == j2.puntuacio) System.out.println("\n"+"EMPAT !!!"+"\n");
+
+                String seguirJugant = "";
+
+                do {
+                    System.out.println("Vols fer una altra partida?  (S) Si   (N) No");
+                    System.out.print("-> ");
+                    seguirJugant = sc.nextLine();
+                    System.out.println("Resposta incorrecta");
+                } while (!seguirJugant.equals("S") && !seguirJugant.equals("N"));
+                if (seguirJugant.equals("N")) break;
+
+                j1.setPuntuacio(0);
+                j2.setPuntuacio(0);
+
+                baralla.generarCartes();
+                baralla.barrejarBaralla();
+
+                for (Carta carta : baralla.getCartes()) {
+                    pilaCartes.push(carta);
+                }
+            }
+            System.out.println();
+        }
     }
 }
