@@ -95,6 +95,9 @@ public class Main {
             System.out.print("-> ");
             String jugar = sc.nextLine();
             if (jugar.equals("GUARDAR")) {
+
+                //TODO TOTES LES CARTES DE LA PILA GUARDARLES A LA BARALLA
+
                 // GUARDAR PARTIDA
                 try {
                     ObjectOutputStream fluxeEscriptura = null;
