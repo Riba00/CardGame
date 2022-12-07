@@ -30,7 +30,7 @@ public class Baralla implements Serializable {
         this.cartes = barallaGenerada;
     }
 
-    public void barrejarBaralla() {
+    public void barrejarCartes() {
         ArrayList<Carta> barallaBarrejada = new ArrayList<>();
 
         while (this.cartes.size() != 0) {
