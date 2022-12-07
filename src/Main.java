@@ -13,16 +13,18 @@ public class Main {
 
     public static void mainMenu() {
         Scanner sc = new Scanner(System.in);
+
         while (true) {
             int opcioMainMenu = 0;
-            System.out.println("--------------");
-            System.out.println("CARTA MÉS ALTA");
-            System.out.println("--------------");
+            System.out.println("+----------------+");
+            System.out.println("| CARTA MÉS ALTA |");
+            System.out.println("+----------------+");
             System.out.println("1. Jugar");
             System.out.println("2. Continuar Partida");
             System.out.println("3. Sortir");
             System.out.println();
             System.out.print("Opcio: ");
+            //CONTROL D'ENTRADA
             try {
                 opcioMainMenu = sc.nextInt();
 
@@ -30,9 +32,12 @@ public class Main {
             } catch (InputMismatchException e) {
                 System.out.println("Opcio incorrecta");
             }
-            sc.nextLine();
-            if (opcioMainMenu == 1) {
 
+            // NO TOCAR
+            sc.nextLine();
+
+            if (opcioMainMenu == 1) {
+                // PARTIDA NOVA AMB ELEMENTS NOUS
                 Jugador j1 = new Jugador();
                 Jugador j2 = new Jugador();
                 Baralla baralla = new Baralla();
@@ -50,7 +55,7 @@ public class Main {
                 if (!fitxer.exists()) {
                     System.out.println("No hi ha cap partida guardada\n");
                 } else {
-                    //lectura:
+                    // LLEGIR DADES
                     try {
                         ObjectInputStream fluxeLectura;
                         fluxeLectura = new ObjectInputStream(new FileInputStream(fitxer));
@@ -58,11 +63,14 @@ public class Main {
                         Jugador j2 = (Jugador) fluxeLectura.readObject();
                         Baralla baralla = (Baralla) fluxeLectura.readObject();
 
+                        System.out.println("La partida s'ha carregat correstament\n");
+                        System.out.println(j1.getNom() + " VS " + j2.getNom());
+
                         fitxer.delete();
 
                         jugar(j1, j2, baralla);
                     } catch (IOException | ClassNotFoundException e) {
-                        throw new RuntimeException(e);
+                        System.out.println("Alguna cosa ha anat malament");
                     }
                 }
             }
@@ -76,15 +84,18 @@ public class Main {
     private static void jugar(Jugador j1, Jugador j2, Baralla baralla) {
 
         Scanner sc = new Scanner(System.in);
-        int midaBaralla = baralla.cartes.size();
 
-        for (int carta = 0; carta <= midaBaralla; carta++) {
-            {
+        while (true) {
+            int midaBaralla = baralla.cartes.size();
+
+            for (int carta = 0; carta < midaBaralla; carta++) {
+
                 System.out.println("ENTER -> Treure cartes    GUARDAR -> Guardar partida");
                 System.out.print("-> ");
                 String jugar = sc.nextLine();
-                if (jugar.equals("GUARDAR")) {
+                System.out.println();
 
+                if (jugar.equals("GUARDAR")) {
                     // GUARDAR PARTIDA
                     try {
                         ObjectOutputStream fluxeEscriptura;
@@ -93,7 +104,7 @@ public class Main {
                         fluxeEscriptura.writeObject(j2);
                         fluxeEscriptura.writeObject(baralla);
                         fluxeEscriptura.close();
-                        System.out.println("\nLa partida s'ha guardat correctament\n");
+                        System.out.println("La partida s'ha guardat correctament\n");
                     } catch (IOException e) {
                         System.out.println("Alguna cosa ha anat malament");
                     }
@@ -110,39 +121,41 @@ public class Main {
                 if (cartaJ1.numero > cartaJ2.numero) j1.ferPunt();
 
                 // MOSTRAR RESULTAT I CARTES
-
+                System.out.println("----------------------");
                 System.out.println(j1.getNom() + " -> " + j1.getPuntuacio() + " : " + j2.getPuntuacio() + " <- " + j2.getNom());
-                System.out.println("---------------------------------");
-                System.out.println(cartaJ1.getPal() + " " + cartaJ1.getNumero() + " ----- " + cartaJ2.getNumero() + " " + cartaJ2.getPal());
+                System.out.println("----------------------");
+                System.out.println(cartaJ1.getPal() + " " + cartaJ1.getNumero() + " --- " + cartaJ2.getNumero() + " " + cartaJ2.getPal());
+                System.out.println("----------------------");
                 System.out.println("Cartes restants: " + baralla.cartes.size());
+            }
+            // COMPROVACIO GUAYADOR
+            if (baralla.cartes.isEmpty()) {
+                if (j1.puntuacio < j2.puntuacio) System.out.println("\n" + j2.getNom() + " HA GUANYAT!!!" + "\n");
+                if (j1.puntuacio > j2.puntuacio) System.out.println("\n" + j1.getNom() + " HA GUANYAT!!!" + "\n");
+                if (j1.puntuacio == j2.puntuacio) System.out.println("\nEMPAT !!!\n");
 
-                // COMPROVACIO GUANYADOR
-                if (baralla.cartes.isEmpty()) {
-                    if (j1.puntuacio < j2.puntuacio) System.out.println("\n" + j2.getNom() + " HA GUANYAT!!!" + "\n");
-                    if (j1.puntuacio > j2.puntuacio) System.out.println("\n" + j1.getNom() + " HA GUANYAT!!!" + "\n");
-                    if (j1.puntuacio == j2.puntuacio) System.out.println("\n" + "EMPAT !!!" + "\n");
+                String seguirJugant;
+                while (true) {
+                    System.out.println("Vols fer una altra partida?  (S) Si   (N) No");
+                    System.out.print("-> ");
+                    seguirJugant = sc.nextLine().toUpperCase();
+                    if (seguirJugant.equals("N") || seguirJugant.equals("S")) break;
+                    System.out.println("Resposta incorrecta");
+                }
 
-                    String seguirJugant;
-
-                    while (true) {
-                        System.out.println("Vols fer una altra partida?  (S) Si   (N) No");
-                        System.out.print("-> ");
-                        seguirJugant = sc.nextLine();
-                        if (seguirJugant.equals("N") || seguirJugant.equals("S")) break;
-                        System.out.println("Resposta incorrecta");
-                    }
-
-                    if (seguirJugant.equals("N")) break;
-
+                // TORNAR A JUGAR
+                if (seguirJugant.equals("S")) {
+                    // SETEJAR JUGADORS I BARALLA
                     j1.setPuntuacio(0);
                     j2.setPuntuacio(0);
-
                     baralla.generarCartes();
                     baralla.barrejarCartes();
-
+                    System.out.println();
+                } else {
+                    break;
                 }
-                System.out.println();
             }
         }
+
     }
 }
