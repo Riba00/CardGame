@@ -7,9 +7,7 @@ public class Main {
 
     public static void main(String[] args) {
         mainMenu();
-
     }
-
 
     public static void mainMenu() {
         Scanner sc = new Scanner(System.in);
@@ -84,18 +82,18 @@ public class Main {
     private static void jugar(Jugador j1, Jugador j2, Baralla baralla) {
 
         Scanner sc = new Scanner(System.in);
+        boolean jugar = true;
 
-        while (true) {
+        while (jugar) {
             int midaBaralla = baralla.cartes.size();
 
             for (int carta = 0; carta < midaBaralla; carta++) {
 
                 System.out.println("ENTER -> Treure cartes    GUARDAR -> Guardar partida");
                 System.out.print("-> ");
-                String jugar = sc.nextLine();
-                System.out.println();
+                String respostaJugar = sc.nextLine().toUpperCase();
 
-                if (jugar.equals("GUARDAR")) {
+                if (respostaJugar.equals("GUARDAR")) {
                     // GUARDAR PARTIDA
                     try {
                         ObjectOutputStream fluxeEscriptura;
@@ -105,34 +103,38 @@ public class Main {
                         fluxeEscriptura.writeObject(baralla);
                         fluxeEscriptura.close();
                         System.out.println("La partida s'ha guardat correctament\n");
+                        jugar = false;
+                        break;
                     } catch (IOException e) {
                         System.out.println("Alguna cosa ha anat malament");
                     }
-                    break;
                 }
+                if ( respostaJugar.equals("")){
+                    // ASSIGNAR CARTES
+                    Carta cartaJ1 = baralla.cartes.remove(0);
+                    carta++;
+                    Carta cartaJ2 = baralla.cartes.remove(0);
 
-                // ASSIGNAR CARTES
-                Carta cartaJ1 = baralla.cartes.remove(0);
-                carta++;
-                Carta cartaJ2 = baralla.cartes.remove(0);
+                    // SUMAR PUNTS
+                    if (cartaJ1.numero < cartaJ2.numero) j2.ferPunt();
+                    if (cartaJ1.numero > cartaJ2.numero) j1.ferPunt();
 
-                // SUMAR PUNTS
-                if (cartaJ1.numero < cartaJ2.numero) j2.ferPunt();
-                if (cartaJ1.numero > cartaJ2.numero) j1.ferPunt();
-
-                // MOSTRAR RESULTAT I CARTES
-                System.out.println("----------------------");
-                System.out.println(j1.getNom() + " -> " + j1.getPuntuacio() + " : " + j2.getPuntuacio() + " <- " + j2.getNom());
-                System.out.println("----------------------");
-                System.out.println(cartaJ1.getPal() + " " + cartaJ1.getNumero() + " --- " + cartaJ2.getNumero() + " " + cartaJ2.getPal());
-                System.out.println("----------------------");
-                System.out.println("Cartes restants: " + baralla.cartes.size());
+                    // MOSTRAR RESULTAT I CARTES
+                    System.out.println("----------------------");
+                    System.out.println(j1.getNom() + " -> " + j1.getPuntuacio() + " : " + j2.getPuntuacio() + " <- " + j2.getNom());
+                    System.out.println("----------------------");
+                    System.out.println(cartaJ1.getPal() + " " + cartaJ1.getNumero() + " --- " + cartaJ2.getNumero() + " " + cartaJ2.getPal());
+                    System.out.println("----------------------");
+                    System.out.println("Cartes restants: " + baralla.cartes.size());
+                    System.out.println();
+                }
+                else System.out.println("Resposta incorrecta");
             }
             // COMPROVACIO GUAYADOR
             if (baralla.cartes.isEmpty()) {
-                if (j1.puntuacio < j2.puntuacio) System.out.println("\n" + j2.getNom() + " HA GUANYAT!!!" + "\n");
-                if (j1.puntuacio > j2.puntuacio) System.out.println("\n" + j1.getNom() + " HA GUANYAT!!!" + "\n");
-                if (j1.puntuacio == j2.puntuacio) System.out.println("\nEMPAT !!!\n");
+                if (j1.puntuacio < j2.puntuacio) System.out.println(j2.getNom() + " HA GUANYAT!!!" + "\n");
+                if (j1.puntuacio > j2.puntuacio) System.out.println(j1.getNom() + " HA GUANYAT!!!" + "\n");
+                if (j1.puntuacio == j2.puntuacio) System.out.println("EMPAT !!!\n");
 
                 String seguirJugant;
                 while (true) {
@@ -152,10 +154,9 @@ public class Main {
                     baralla.barrejarCartes();
                     System.out.println();
                 } else {
-                    break;
+                    jugar=false;
                 }
             }
         }
-
     }
 }
